@@ -1,0 +1,20 @@
+#install tools needed to produce needed files and alignments
+sudo apt update
+sudo apt install bowtie2 samtools bcftools
+#index the reference genome for bowtie2
+bowtie2-build reference_genome.fasta reference_index
+#Align Paired-End Reads with Bowtie2 with ouput file as .sam
+bowtie2 -x reference_index -1 R1.fastq.gz -2 R2.fastq.gz -S output.sam 
+#Convert SAM to BAM Format
+samtools view -bS output.sam > output.bam
+#Sort BAM file and Index BAM file
+samtools sort -o output_sorted.bam output.bam
+samtools index output_sorted.bam
+#Generate Variant Calls (BCF Format) for SNPs and small indels; output is in BCF format
+bcftools mpileup -Ou -f reference_genome.fasta output_sorted.bam | bcftools call -mv -Ob -o variants.bcf
+#Convert BCF to VCF format for easier interpretation
+bcftools view variants.bcf > variants.vcf
+#Optionally filter variants based in quality score, i.e. leave out low quality scores (i.e. score <20)
+bcftools filter -s LOWQUAL -e '%QUAL<20' variants.vcf > filtered_variants.vcf
+#Extract Relevant Fields for ML (Extract chromosome, position, reference, alternative allele, and genotype)
+bcftools query -f '%CHROM\t%POS\t%REF\t%ALT\t[%GT]\n' filtered_variants.vcf > variants.tsv
