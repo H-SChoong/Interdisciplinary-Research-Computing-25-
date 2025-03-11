@@ -8,5 +8,7 @@ Uploaded:
 32844
 34151
 35951
+30889
 
 Aligned:
+32844 complete + vcf file 
