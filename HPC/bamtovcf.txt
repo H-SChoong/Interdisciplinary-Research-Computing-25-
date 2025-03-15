@@ -1,0 +1,19 @@
+#PBS -l walltime=24:00:00
+#PBS -l select=1:ncpus=16:mem=450gb
+
+ml tools/prod
+ml BCFtools/1.19-GCC-13.2.0
+ml SAMtools/1.19.2-GCC-13.2.0
+
+cd $PBS_O_WORKDIR
+
+gunzip -c GRCh38.primary_assembly.genome.fa.gz > GRCh38.primary_assembly.genome.fa
+
+samtools sort BBN006_34151.bam -o sorted_BBN006_34151.bam
+
+bcftools mpileup -Ou -f GRCh38.primary_assembly.genome.fa sorted_BBN006_34151.bam | bcftools call -mv -Ob -o variants_B$bcftools view variants_BBN006_34151.bcf > variants_BBN006_34151.vcf
+bcftools filter -s LOWQUAL -e '%QUAL<20' variants_BBN006_34151.vcf > filtered_variants_BBN006_34151.vcf
+bgzip filtered_variants_BBN006_34151.vcf
+bcftools index filtered_variants_BBN006_34151.vcf.gz
+
+echo "Variant calling completed successfully!"
