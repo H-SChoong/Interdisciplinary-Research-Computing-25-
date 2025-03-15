@@ -1,0 +1,12 @@
+#PBS -l walltime=48:00:00
+#PBS -l select=1:ncpus=128:mem=920gb
+
+ml tools/prod
+ml Bowtie2/2.4.5-GCC-11.3.0
+
+cd $PBS_O_WORKDIR
+
+bowtie2 -p 128 -x human_index -1 BBN002_36130_WGS_R1.fastq.gz -2 BBN002_36130_WGS_R2.fastq.gz -S BBN002_36130.sam
+
+#BBN002_36130_WGS_R1.fastq.gz
+#BBN002_36130_WGS_R2.fastq.gz
