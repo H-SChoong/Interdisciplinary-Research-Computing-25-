@@ -1,0 +1,17 @@
+#PBS -l walltime=72:00:00
+#PBS -l select=1:ncpus=16:mem=500gb
+#PBS -J 1-2
+
+ml tools/prod
+ml Bowtie2/2.4.5-GCC-11.3.0
+ml SAMtools/1.19.2-GCC-13.2.0
+
+cd $PBS_O_WORKDIR
+
+R1=$(ls -1 *R1.fastq.gz|head -n $PBS_ARRAY_INDEX| tail -n 1)
+R2=$(ls -1 *R2.fastq.gz|head -n $PBS_ARRAY_INDEX| tail -n 1)
+OUT=$(basename -s .fastq.gz $R1)
+OUT2=$(echo "$OUT"| sed 's/_R1//')
+
+echo "bowtie2 -p 64 -x human_index -1 $R1 -2 $R2 | samtools view -bS - > $OUT2.bam"
+bowtie2 -p 2 -x human_index -1 $R1 -2 $R2 | samtools view -bS - > $OUT2.bam
