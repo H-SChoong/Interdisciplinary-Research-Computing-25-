@@ -1,0 +1,10 @@
+#PBS -l walltime=24:00:00
+#PBS -l select=1:ncpus=32:mem=100gb
+
+ml tools/prod
+ml SAMtools/1.19.2-GCC-13.2.0
+
+cd $PBS_O_WORKDIR
+pwd
+
+samtools view -bS output_9980.sam > output_9980.bam
