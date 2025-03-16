@@ -1,0 +1,19 @@
+#PBS -l walltime=24:00:00
+#PBS -l select=1:ncpus=128:mem=920gb
+
+ml tools/prod
+ml Bowtie2/2.4.5-GCC-11.3.0
+ml SAMtools/1.19.2-GCC-13.2.0
+ml BCFtools/1.19-GCC-13.2.0
+
+cd $PBS_O_WORKDIR
+
+bowtie2 -p 128 -x human_index -1 genome_R1.fastq.gz -2 genome_R2.fastq.gz | samtools view -bS - > output.bam 
+
+samtools sort -o output_sorted.bam output.bam
+samtools index output_sorted.bam
+
+bcftools mpileup -Ou -f GRCh38.primary_assembly.genome.fa output_sorted.bam | bcftools call -mv -Ob -o variants bcftools view variants.bcf > variants.vcf
+bcftools index variants.vcf
+bcftools filter -s LOWQUAL -e '%QUAL<30' variants.vcf > filtered_variants.vcf
+bcftools index filtered_variants.vcf
