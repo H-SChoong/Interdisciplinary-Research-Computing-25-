@@ -40,8 +40,8 @@ def plot_combined_success_vs_threshold():
 
     # Plot results
     plt.figure(figsize=(10, 5))
-    plt.plot(threshold_range_prs, success_scores_prs, marker='o', linestyle='-', color='b', label='Success Score (PRS)')
-    plt.plot(threshold_range_squared, success_scores_squared, marker='o', linestyle='--', color='r', label='Success Score (Squared PRS)')
+    plt.plot(threshold_range_prs, success_scores_prs, marker='o', linestyle='-', color='b', markersize=4, label='Success Score (PRS)')
+    plt.plot(threshold_range_squared, success_scores_squared, marker='o', linestyle='--', color='r', markersize=4, label='Success Score (Squared PRS)')
 
     plt.xlabel('Threshold Value')
     plt.ylabel('Classification Success Score')
