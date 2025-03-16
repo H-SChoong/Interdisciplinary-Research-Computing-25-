@@ -1,0 +1,20 @@
+Simulate Alignment for the New Reference Genome:
+wgsim -N 1000000 -1 150 -2 150 -r 0 -R 0 -X 0 new_reference.fa control_R1.fq control_R2.fq
+
+Index the New Reference for Alignment:
+bwa index new_reference.fa
+
+Align Simulated Reads to the New Reference:
+bwa mem new_reference.fa control_R1.fq control_R2.fq | samtools view -bS -o control.bam
+
+Sort & Index BAM File:
+samtools sort control.bam -o control.sorted.bam
+samtools index control.sorted.bam
+
+Call Variants to Generate a VCF:
+bcftools mpileup -Ou -f new_reference.fa control.sorted.bam | bcftools call -mv -Oz -o control_variants.vcf.gz
+tabix -p vcf control_variants.vcf.gz
+
+Note: install bwa for alignment using: sudo apt install bwa 
+Note: install SAMtools for sorting and indexing bam file using: sudo apt install samtools
+Note: install BCFtools for calling variants and creating vcf file using: sudo apt install bcftools
