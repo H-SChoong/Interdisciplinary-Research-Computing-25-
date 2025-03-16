@@ -1,0 +1,1 @@
+This section creates our benchmarking algorithms, originally created to benchmark the performance of our ML. It uses simple classification strategies based on the "optimal hyperplane" logic behind the well-known Support Vector Machine Algorithm, though it is far simpler.
