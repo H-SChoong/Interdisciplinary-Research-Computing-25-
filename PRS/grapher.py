@@ -3,61 +3,53 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 def parammed_PRS_classifier(PRS, threshold):
-    """
-    Classifies PRS scores based on a threshold.
-
-    Parameters:
-        PRS (float): Polygenic Risk Score.
-        threshold (float): Threshold value for classification.
-
-    Returns:
-        int: 1 if PRS is above the threshold (high risk), 0 otherwise.
-    """
+    """Classifies PRS scores based on a threshold."""
     return int(PRS > threshold)
 
 def evaluate_PRS_classification(df, threshold):
-    """
-    Classifies PRS scores and evaluates classification accuracy.
+    """Classifies PRS scores and evaluates classification accuracy."""
+    df["Predicted Label"] = df["PRS"].apply(lambda x: parammed_PRS_classifier(x, threshold))
+    return (df["Predicted Label"] == df["True Label"]).mean()
 
-    Parameters:
-        df (DataFrame): DataFrame containing 'PRS' and 'true_label'.
-        threshold (float): PRS threshold value for classification.
+def evaluate_squared_PRS_classification(df, threshold):
+    """Classifies squared PRS scores and evaluates classification accuracy."""
+    df["Squared PRS"] = df["PRS"].astype(float) ** 2  # Ensure column is created
+    df["Predicted Label Squared"] = df["Squared PRS"].apply(lambda x: parammed_PRS_classifier(x, threshold))
+    return (df["Predicted Label Squared"] == df["True Label"]).mean()
 
-    Returns:
-        float: Classification accuracy (success score).
-    """
-    df["predicted_label"] = df["PRS"].apply(lambda x: parammed_PRS_classifier(x, threshold))
-    success_score = (df["predicted_label"] == df["true_label"]).mean()
-    return success_score
+def plot_combined_success_vs_threshold():
+    """Plots classification success scores for both PRS and squared PRS on the same graph."""
+    df = pd.read_excel(r"C:\Users\H-SCh\OneDrive\Desktop\IRC\PRS Scores.xlsx")
 
-def plot_success_vs_threshold(file_path, sheet_name):
-    """
-    Loops over a list of threshold values and plots success score vs. threshold.
+    # Convert PRS column to float
+    df["PRS"] = df["PRS"].astype(float)
 
-    Parameters:
-        file_path (str): Path to the Excel file.
-        sheet_name (str): Name of the sheet containing data.
-    """
-    # Load Excel file
-    df = pd.read_excel(file_path, sheet_name=sheet_name)
+    # Ensure Squared PRS column is created
+    df["Squared PRS"] = df["PRS"] ** 2  
 
-    # Generate threshold values from -0.5 to 0.5 in 40 steps, plus additional extreme points
-    threshold_range = np.linspace(-0.5, 0.5, 40).tolist() + [-1, -0.75, 0.75, 1]
+    # Debugging: Print column names to verify
+    print("Columns in DataFrame:", df.columns)
 
-    # Compute success scores for each threshold
-    success_scores = [evaluate_PRS_classification(df, threshold) for threshold in threshold_range]
+    # Generate threshold values: PRS uses [-1, 1], Squared PRS uses [0, max_squared]
+    threshold_range_prs = np.linspace(-1.0, 1.0, 100).tolist()
+    threshold_range_squared = np.linspace(0, 1.0, 50).tolist()  # Only non-negative
+
+    # Compute success scores
+    success_scores_prs = [evaluate_PRS_classification(df, threshold) for threshold in threshold_range_prs]
+    success_scores_squared = [evaluate_squared_PRS_classification(df, threshold) for threshold in threshold_range_squared]
 
     # Plot results
     plt.figure(figsize=(10, 5))
-    plt.plot(threshold_range, success_scores, marker='o', linestyle='-', color='b', label='Success Score')
+    plt.plot(threshold_range_prs, success_scores_prs, marker='o', linestyle='-', color='b', label='Success Score (PRS)')
+    plt.plot(threshold_range_squared, success_scores_squared, marker='o', linestyle='--', color='r', label='Success Score (Squared PRS)')
+
     plt.xlabel('Threshold Value')
     plt.ylabel('Classification Success Score')
-    plt.title('PRS Classification Success vs. Threshold')
+    plt.title('CLassification Success Scores for Naive Benchmarking Algorithms')
     plt.ylim(0, 1)
     plt.grid(True)
     plt.legend()
     plt.show()
 
 
-plot_success_vs_threshold(file_path, sheet_name)
-
+plot_combined_success_vs_threshold()
